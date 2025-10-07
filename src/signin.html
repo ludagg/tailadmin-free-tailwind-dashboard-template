@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', function() {
         submitButton.textContent = 'Connexion...';
 
         try {
-            const response = await fetch('/backend/auth/login.php', {
+            const response = await fetch('http://schoolexams.fr.x10.mx/backend/auth/login.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
