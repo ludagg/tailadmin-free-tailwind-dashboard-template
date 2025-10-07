@@ -75,11 +75,11 @@
                   <div class="relative flex justify-center text-sm">
                     <span
                       class="p-2 text-gray-400 bg-white dark:bg-gray-900 sm:px-5 sm:py-2"
-                      >Or</span
+                      >Authentification</span
                     >
                   </div>
                 </div>
-                <form>
+                <form id="loginForm">
                   <div class="space-y-5">
                     <!-- Email -->
                     <div>
@@ -150,7 +150,7 @@
                     </div>
                                         <!-- Button -->
                     <div>
-                      <button
+                      <button type="submit"
                         class="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600"
                       >
                         Sign In
@@ -219,5 +219,107 @@
       </div>
     </div>
     <!-- ===== Page Wrapper End ===== -->
+<script>
+// Gestion du formulaire de connexion
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.querySelector('form');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.querySelector('input[type="password"]');
+    const submitButton = loginForm.querySelector('button[type="submit"]');
+
+    // Empêcher le rechargement de la page
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        await handleLogin();
+    });
+
+    // Fonction de connexion
+    async function handleLogin() {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        // Validation basique
+        if (!email || !password) {
+            showError('Veuillez remplir tous les champs');
+            return;
+        }
+
+        // Désactiver le bouton pendant la connexion
+        submitButton.disabled = true;
+        submitButton.textContent = 'Connexion...';
+
+        try {
+            const response = await fetch('/backend/auth/login.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showSuccess('Connexion réussie ! Redirection...');
+                
+                // Redirection vers le dashboard après 1 seconde
+                setTimeout(() => {
+                    window.location.href = '/dashboard.html';
+                }, 1000);
+                
+            } else {
+                showError(result.message || 'Erreur de connexion');
+            }
+
+        } catch (error) {
+            console.error('Erreur:', error);
+            showError('Erreur de connexion au serveur');
+        } finally {
+            // Réactiver le bouton
+            submitButton.disabled = false;
+            submitButton.textContent = 'Sign In';
+        }
+    }
+
+    // Fonctions d'affichage des messages
+    function showError(message) {
+        // Créer un élément d'erreur s'il n'existe pas
+        let errorDiv = document.querySelector('.error-message');
+        if (!errorDiv) {
+            errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded';
+            loginForm.parentNode.insertBefore(errorDiv, loginForm);
+        }
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+    }
+
+    function showSuccess(message) {
+        // Créer un élément de succès
+        let successDiv = document.querySelector('.success-message');
+        if (!successDiv) {
+            successDiv = document.createElement('div');
+            successDiv.className = 'success-message mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded';
+            loginForm.parentNode.insertBefore(successDiv, loginForm);
+        }
+        successDiv.textContent = message;
+        successDiv.style.display = 'block';
+    }
+
+    // Auto-remplissage pour les tests (à retirer en production)
+    function autoFillTestCredentials() {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            emailInput.value = 'admin@chanas.local';
+            passwordInput.value = 'admin123';
+        }
+    }
+
+    // Appeler l'auto-remplissage en développement
+    autoFillTestCredentials();
+});
+</script>
   </body>
 </html>
